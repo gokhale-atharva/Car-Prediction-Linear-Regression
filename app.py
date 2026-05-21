@@ -30,8 +30,9 @@ def load_and_train_model():
     current_year = 2026
     df['Car_Age'] = current_year - df['year']
     
-    # Separate independent features and targets (REMOVED outlier filter to prevent 0-row wipeout)
-    X = df[['km_driven', 'Brand', 'Model', 'fuel', 'seller_type', 'transmission', 'owner', 'Car_Age']]
+    # DEFINE EXACT FEATURE TRAINING ORDER
+    feature_cols = ['km_driven', 'Brand', 'Model', 'fuel', 'seller_type', 'transmission', 'owner', 'Car_Age']
+    X = df[feature_cols]
     y = df['selling_price']
     
     # Create the dynamic choice dictionaries for the front-end forms
@@ -98,6 +99,7 @@ with col2:
 current_year = 2026
 car_age = current_year - manufacture_year
 
+# Construct user payload DataFrame
 input_payload = pd.DataFrame([{
     'km_driven': km_driven,
     'Brand': car_brand,
@@ -109,10 +111,14 @@ input_payload = pd.DataFrame([{
     'Car_Age': car_age
 }])
 
+# CRITICAL FIX: Explicitly re-align columns to match the exact order used during model training (.fit)
+feature_order = ['km_driven', 'Brand', 'Model', 'fuel', 'seller_type', 'transmission', 'owner', 'Car_Age']
+input_payload = input_payload[feature_order]
+
 st.markdown("---")
 
 if st.button("Evaluate Fair Market Listing Price", type="primary"):
     prediction = model.predict(input_payload)[0]
     final_output = max(15000, prediction)
     st.success(f"### Predicted Market Price Valuation: ₹ {final_output:,.2f}")
-    st.caption("Engineering System Node: Continuous fields were standard-scaled and hierarchical options cross-evaluated natively.")
+    st.caption("Engineering System Node: Column feature arrays were strictly indexed, continuous fields standard-scaled, and categories hot-encoded successfully.")
